@@ -1,0 +1,68 @@
+PROGRAM TCC_Protocolo PROG_ARM = 1 
+VAR                              -- Declara‡ão de vari veis globais
+  sinal : BOOLEAN (FALSE) NOSAVE -- Valor inicial de "sinal" = false
+CONST                            -- Declara‡ão de constantes   
+  controle = 3 -- SD1            -- Sa¡das digitais da controladora
+  valor = 4    -- SD2
+-- ------------------------------------------------------------------
+ROUTINE ENVIAR_COMANDO        -- Muda o estado de SD1 a cada execu‡ão
+BEGIN                            -- In¡cio da fun‡ão
+IF sinal = TRUE THEN             
+  $DOUT[controle] := OFF         -- Aplica n¡vel baixo em SD1
+  sinal := FALSE                 
+ELSE
+  $DOUT[controle] := ON          -- Aplica n¡vel alto em SD1
+  sinal := TRUE
+ENDIF                            
+DELAY 25                      -- Intervalo entre o envio de cada bit
+END ENVIAR_COMANDO               -- Fim da fun‡ão                          
+-- ------------------------------------------------------------------
+ROUTINE ENVIAR_SINAL (comando : BOOLEAN; referencia : INTEGER(0))
+-- Transmite uma sequˆncia de 2 ou 10 bits representando uma instru‡ão
+-- Parƒmetros:                   
+--    comando    -> 1 p/ controle de posi‡ão; 0 p/ controle de for‡a
+--    referencia -> Inteiro representando um percentual (0 a 100%)
+--               -> Valor padrão (default) = 0                             
+VAR i : INTEGER                  -- Declara‡ão de vari veis locais
+BEGIN                            -- In¡cio da fun‡ão
+-- Identificar o comando: Abrir garra (1) ou Fechar garra (0)?
+IF comando = TRUE THEN
+  $DOUT[valor] := ON             -- Aplica n¡vel alto em SD2
+ELSE                             
+  $DOUT[valor] := OFF            -- Aplica n¡vel baixo em SD2
+ENDIF
+ENVIAR_COMANDO                   -- Envia o primeiro bit
+-- Utilizar referˆncia predefinida? Sim (0) ou Não, definir nova (1)?
+IF referencia = 0 THEN
+  $DOUT[valor] := OFF            -- Aplica n¡vel baixo em SD2
+ELSE
+  $DOUT[valor] := ON             -- Aplica n¡vel alto em SD2
+ENDIF
+ENVIAR_COMANDO                   -- Envia o segundo bit
+-- Defininir uma nova referˆncia -----------------------------------
+IF (referencia > 0) AND (referencia <= 100) THEN
+FOR i := 1 TO 7 DO               -- Conversão: inteiro -> bin rio
+  -- Verifica se o bit na posi‡ão i da vari vel "referencia" vale 0
+  -- e representa o resultado em SD2
+IF BIT_TEST(referencia, i, OFF) THEN  
+    $DOUT[valor] := OFF          
+  ELSE
+    $DOUT[valor] := ON
+  ENDIF 
+ENVIAR_COMANDO                   -- Envia os bits de 3 a 9
+ENDFOR
+$DOUT[valor] := OFF              -- Bit de verifica‡ão (0)
+ENVIAR_COMANDO                   -- Envia o bit de verifica‡ão (10)
+ENDIF
+$DOUT[valor] := OFF              -- Redefine as condi‡ões iniciais
+$DOUT[controle] := OFF
+sinal := FALSE
+END ENVIAR_SINAL                 -- Fim da fun‡ão 
+-- ------------------------------------------------------------------
+BEGIN                            -- Exemplo de Programa Principal
+  $DOUT[3] := OFF                -- Condi‡ões iniciais
+  $DOUT[4] := OFF
+  ENVIAR_SINAL(TRUE, 50)  -- Abre/Move a garra at‚ 50 mm de abertura
+  DELAY 5000
+  ENVIAR_SINAL(FALSE, 25) -- Fecha a garra com 25% da for‡a m xima
+END TCC_Protocolo
