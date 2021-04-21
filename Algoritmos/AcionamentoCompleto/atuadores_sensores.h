@@ -117,11 +117,11 @@ void abrirGarra(int abertura = 0) {
       // Tempo em ms desde o início da execução do programa
       unsigned long tempo_atual = millis();
 
-      // A cada 500ms, verifica se ocorreu o travamento do motor
-      if (tempo_atual - tempo_anterior >= 500){
+      // A cada 20ms, verifica se ocorreu o travamento do motor
+      if (tempo_atual - tempo_anterior >= 20){
         // Excluindo a primeira iteração
         if (tempo_anterior > 0){
-          // Se a velocidade do motor se manteve em 0 durante 250ms 
+          // Se a velocidade do motor se manteve em 0 durante 20ms 
           if (teste_travamento == contador_posicao){
             pararGarra();
             break;
@@ -166,11 +166,11 @@ void fecharGarra(int forca = 0){
         else PWM -= 10;
         analogWrite(motor1, PWM);
       }
-      // A cada 250ms, verifica se ocorreu o travamento do motor
-      if (tempo_atual - tempo_anterior >= 250){
+      // A cada 20ms, verifica se ocorreu o travamento do motor
+      if (tempo_atual - tempo_anterior >= 20){
         // Excluindo a primeira iteração
         if (tempo_anterior > 0){
-          // Se a velocidade do motor se manteve em 0 durante 250ms 
+          // Se a velocidade do motor se manteve em 0 durante 20ms 
           if (teste_travamento == contador_posicao){
             pararGarra();
             travamento = true;
@@ -187,7 +187,7 @@ void fecharGarra(int forca = 0){
 //====================================================================
 // Desloca os dedos até a origem e redefine os contadores
 void redefinirPosicao() {
-  fecharGarra(30);
+  fecharGarra(40);
   contador_posicao = 0;
   abertura_atual = 0;
 }
