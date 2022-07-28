@@ -24,29 +24,35 @@ bool aguardarComando(){
 }
 //====================================================================
 // Recebe, converte e armazena uma nova referência
-int referencia (){
+float referencia (){
   int SD2 = 10;                           // Variáveis locais
-  // Número de 7 bits e um bit de verificação
-  byte ref = 0b00000000; 
+  float ref = 0.0;
 
-  // Leitura sequencial de 8 bits
-  for(int i=0; i<8; i++){
+// Leitura sequencial de 8 bits
+// Referência binária de 7 bits e um bit de verificação (0)
+
+// Os bits são recebidos em ordem do bit menos significativo
+// para o mais significativo
+  for(int i=0; i<7; i++){
 
       // Se um bit for recebido
       if(aguardarComando()) {
-        // Verifica o valor do bit lido na entrada digital SD2
-        // e registra no índice i da variável "ref"
-        if (digitalRead(SD2)) bitWrite(ref, i, 1);
-        else bitWrite(ref, i, 0);
+        // Caso seu valor seja 1
+        if (digitalRead(SD2)){
+          // Adiciona ao resultado da conversão a potência de base 2
+          // referente à ordem do bit atual
+          ref = ref + pow(2, (i));
+        }
       }
-    // Se o limite de tempo de espera for excedido, cancela a operação
       else return 0;
       }  
-  // Confere se bit de verificação foi recebido
-  if(bitRead(ref, 7) == 0){ 
-    // Converte em inteiro o byte construído 
-    int valor = ref;
-    return valor;
+      
+// Confere se bit de verificação foi recebido
+  if(aguardarComando()){
+    if (!digitalRead(SD2)){
+      return ceil(ref);
+    }
+    else return 0;
   }
   // Cancela a operação
   else return 0;

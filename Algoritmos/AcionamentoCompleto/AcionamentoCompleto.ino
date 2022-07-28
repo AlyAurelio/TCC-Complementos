@@ -33,7 +33,9 @@ void loop() { // --- Loop Infinito ---
         if(!comando) ref = 25; // Referência de força padrão
         if(comando)  ref = 70; // Referência de abertura padrão
       }
-      else ref = referencia(); // Ler nova referência
+      else{
+        ref = referencia(); // Ler nova referência
+      }
       
       if(!comando) fecharGarra(ref); // Executa a função identificada
       if(comando)  abrirGarra(ref);  // com base na referência definida
